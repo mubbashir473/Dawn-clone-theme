@@ -9,7 +9,7 @@
  */
 {
   "sections": {
-    "template": {
+    "main": {
       "type": "template-article",
       "blocks": {
         "title": {
@@ -44,6 +44,6 @@
     }
   },
   "order": [
-    "template"
+    "main"
   ]
 }
