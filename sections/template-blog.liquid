@@ -2,7 +2,7 @@
   {% for article in blog.articles %}
     <div>
       {% if article.image %}
-       
+        <img src="{{article.image }}" alt="{{article.image.alt}}">
       {% endif %}
     </div>
   {% endfor %}
