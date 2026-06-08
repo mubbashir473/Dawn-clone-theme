@@ -1,0 +1,35 @@
+{% comment %}
+  SNIPPET: price.liquid
+  Usage: {% render 'price', product: product, variant: variant %}
+
+  Variables:
+    product  — the product object
+    variant  — specific variant (optional, falls back to selected_or_first_available_variant)
+    show_compare — show compare_at_price (default: true)
+{% endcomment %}
+
+{%- liquid
+  assign target = variant | default: product.selected_or_first_available_variant
+  assign compare = target.compare_at_price
+  assign price   = target.price
+  assign on_sale = false
+  if compare > price
+    assign on_sale = true
+  endif
+-%}
+
+<div class="price {% if on_sale %}price--on-sale{% endif %} {% unless target.available %}price--sold-out{% endunless %}">
+
+  {%- if on_sale -%}
+    <span class="price__sale">{{ price | money }}</span>
+    <s class="price__compare">{{ compare | money }}</s>
+    <span class="price__badge-sale">Save {{ compare | minus: price | money }}</span>
+  {%- else -%}
+    <span class="price__regular">{{ price | money }}</span>
+  {%- endif -%}
+
+  {%- unless target.available -%}
+    <span class="price__sold-out">Sold Out</span>
+  {%- endunless -%}
+
+</div>

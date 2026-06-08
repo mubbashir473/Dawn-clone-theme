@@ -1,0 +1,125 @@
+{% comment %}
+  SNIPPET: variant-picker.liquid
+  Usage: {% render 'variant-picker', product: product, section: section %}
+
+  This snippet renders one "option group" per product option (Size, Color, etc).
+  It supports two display types per option:
+    - "button"   → pill buttons (best for Size, Color text labels)
+    - "color"    → color swatches (when option name contains "color" or "colour")
+
+  JS in product.js reads [data-variant-picker] and handles:
+    - updating selected state
+    - finding the matching variant
+    - disabling unavailable combinations
+    - updating price, image, URL
+{% endcomment %}
+
+{%- unless product.has_only_default_variant -%}
+
+  <div class="variant-picker" data-variant-picker>
+
+    {%- for option in product.options_with_values -%}
+
+      {%- liquid
+        assign option_name_downcase = option.name | downcase
+        assign is_color = false
+        if option_name_downcase contains 'color' or option_name_downcase contains 'colour'
+          assign is_color = true
+        endif
+      -%}
+
+      <div
+        class="variant-option"
+        data-option-index="{{ forloop.index0 }}"
+        data-option-name="{{ option.name | escape }}"
+      >
+
+        <!-- Label: "Size: Medium" -->
+        <div class="variant-option__header">
+          <span class="variant-option__name">{{ option.name }}</span>
+          <span class="variant-option__selected" data-selected-value>{{ option.selected_value }}</span>
+        </div>
+
+        <!-- Values -->
+        <div class="variant-option__values">
+
+          {%- for value in option.values -%}
+
+            {%- liquid
+              # Is this value currently selected?
+              assign is_selected = false
+              if option.selected_value == value
+                assign is_selected = true
+              endif
+
+              # Is there ANY available variant that uses this value?
+              # We check all variants to handle "unavailable combination" states
+              assign value_available = false
+              for variant in product.variants
+                case option.position
+                  when 1
+                    if variant.option1 == value and variant.available
+                      assign value_available = true
+                    endif
+                  when 2
+                    if variant.option2 == value and variant.available
+                      assign value_available = true
+                    endif
+                  when 3
+                    if variant.option3 == value and variant.available
+                      assign value_available = true
+                    endif
+                endcase
+              endfor
+            -%}
+
+            {%- if is_color -%}
+              <!-- COLOR SWATCH -->
+              <button
+                type="button"
+                class="variant-swatch {% if is_selected %}is-selected{% endif %} {% unless value_available %}is-unavailable{% endunless %}"
+                data-option-value="{{ value | escape }}"
+                data-option-index="{{ forloop.parentloop.index0 }}"
+                style="--swatch-color: {{ value | downcase | replace: ' ', '' }};"
+                title="{{ value }}{% unless value_available %} - Sold Out{% endunless %}"
+                aria-label="{{ value }}{% unless value_available %} - Sold Out{% endunless %}"
+                aria-pressed="{{ is_selected }}"
+              >
+                <span class="sr-only">{{ value }}</span>
+              </button>
+
+            {%- else -%}
+              <!-- PILL BUTTON -->
+              <button
+                type="button"
+                class="variant-btn {% if is_selected %}is-selected{% endif %} {% unless value_available %}is-unavailable{% endunless %}"
+                data-option-value="{{ value | escape }}"
+                data-option-index="{{ forloop.parentloop.index0 }}"
+                aria-label="{{ value }}{% unless value_available %} - Sold Out{% endunless %}"
+                aria-pressed="{{ is_selected }}"
+              >
+                {{ value }}
+              </button>
+            {%- endif -%}
+
+          {%- endfor -%}
+
+        </div>
+      </div>
+
+    {%- endfor -%}
+
+    <!-- Hidden input that holds the selected variant ID for form submission -->
+    <input
+      type="hidden"
+      name="id"
+      data-variant-id
+      value="{{ product.selected_or_first_available_variant.id }}"
+    >
+
+  </div>
+
+{%- else -%}
+  <!-- Product has only one variant (no options) — still need the hidden input -->
+  <input type="hidden" name="id" value="{{ product.variants[0].id }}">
+{%- endunless -%}

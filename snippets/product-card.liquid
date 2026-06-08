@@ -1,21 +1,134 @@
-<div class="w-full py-6 px-3">
-  <div class="border bg-white shadow-lg rounded-lg overflow-hidden">
-    <a href="{{ product_product.url }}">
-      {% if product_product.featured_image %}
-        <div class="h-80 overflow-hidden">
+{% comment %}
+  SNIPPET: product-card.liquid
+  Usage: {% render 'product-card', product: product, show_quick_add: true %}
+
+  Variables:
+    product         — product object (required)
+    show_quick_add  — show Quick Add button (default: false)
+    show_vendor     — show vendor name (default: false)
+    lazy            — lazy-load image (default: true)
+    image_ratio     — aspect ratio class: 'square', 'portrait', 'landscape' (default: 'square')
+{% endcomment %}
+
+{%- liquid
+  assign show_quick_add = show_quick_add | default: false
+  assign show_vendor     = show_vendor    | default: false
+  assign lazy            = lazy           | default: true
+  assign image_ratio     = image_ratio    | default: 'square'
+  assign loading_attr    = 'lazy'
+  if lazy == false
+    assign loading_attr = 'eager'
+  endif
+
+  assign card_variant = product.selected_or_first_available_variant
+  assign on_sale      = false
+  if card_variant.compare_at_price > card_variant.price
+    assign on_sale = true
+  endif
+-%}
+
+<article class="product-card" data-product-id="{{ product.id }}">
+
+  <!-- IMAGE -->
+  <a href="{{ product.url }}" class="product-card__image-wrap" aria-label="{{ product.title | escape }}" tabindex="-1">
+
+    <div class="product-card__image product-card__image--{{ image_ratio }}">
+      {%- if product.featured_image -%}
+        <img
+          src="{{ product.featured_image | image_url: width: 600 }}"
+          srcset="
+            {{ product.featured_image | image_url: width: 300 }} 300w,
+            {{ product.featured_image | image_url: width: 600 }} 600w,
+            {{ product.featured_image | image_url: width: 900 }} 900w
+          "
+          sizes="(max-width: 640px) 50vw, (max-width: 991px) 33vw, 25vw"
+          alt="{{ product.featured_image.alt | escape | default: product.title }}"
+          loading="{{ loading_attr }}"
+          width="{{ product.featured_image.width }}"
+          height="{{ product.featured_image.height }}"
+          class="product-card__img"
+        />
+        {%- if product.images[1] -%}
           <img
-            class="w-full h-full object-cover transition duration-1000 ease-in-out hover:scale-105 transform"
-            src="{{ product_product.featured_image |  image_url: medium }}"
-            alt="{{ product_product.featured_image.alt }}">
-        </div>
-      {% else %}
-        {{ 'product-1' | placeholder_svg_tag: 'w-full h-full object-cover bg-gray-100' }}
-      {% endif %}
-    </a>
-    <div class="flex flex-col p-4">
-      <span class="text-sm">{{ product_product.vendor }}</span>
-      <a href="{{ product_product.url }}" class="text-gray-700 upercase font-medium">{{ product_product.title }}</a>
-      <p class="text-gray-500">{{ product_product.price | money }}</p>
+            src="{{ product.images[1] | image_url: width: 600 }}"
+            alt="{{ product.images[1].alt | escape | default: product.title }}"
+            loading="lazy"
+            class="product-card__img product-card__img--hover"
+            aria-hidden="true"
+          />
+        {%- endif -%}
+      {%- else -%}
+        {{ 'product-1' | placeholder_svg_tag: 'product-card__placeholder' }}
+      {%- endif -%}
     </div>
+
+    <!-- BADGES -->
+    <div class="product-card__badges">
+      {%- if on_sale -%}
+        <span class="badge badge--sale">Sale</span>
+      {%- endif -%}
+      {%- unless product.available -%}
+        <span class="badge badge--sold-out">Sold Out</span>
+      {%- endunless -%}
+      {%- if product.tags contains 'new' -%}
+        <span class="badge badge--new">New</span>
+      {%- endif -%}
+    </div>
+
+  </a>
+
+  <!-- INFO -->
+  <div class="product-card__info">
+
+    {%- if show_vendor and product.vendor != blank -%}
+      <p class="product-card__vendor">{{ product.vendor }}</p>
+    {%- endif -%}
+
+    <h3 class="product-card__title">
+      <a href="{{ product.url }}">{{ product.title }}</a>
+    </h3>
+
+    <!-- PRICE -->
+    {% render 'price', product: product %}
+
+    <!-- COLOR SWATCHES (quick preview) -->
+    {%- assign color_option = product.options_with_values | where: 'name', 'Color' | first -%}
+    {%- if color_option -%}
+      <div class="product-card__swatches">
+        {%- for value in color_option.values limit: 5 -%}
+          <span
+            class="product-card__swatch"
+            style="--swatch-color: {{ value | downcase | replace: ' ', '' }};"
+            title="{{ value }}"
+          ></span>
+        {%- endfor -%}
+        {%- if color_option.values.size > 5 -%}
+          <span class="product-card__swatch-more">+{{ color_option.values.size | minus: 5 }}</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
   </div>
-</div>
+
+  <!-- QUICK ADD -->
+  {%- if show_quick_add and product.available -%}
+    <div class="product-card__quick-add">
+      {%- if product.has_only_default_variant -%}
+        <button
+          type="button"
+          class="btn btn--primary btn--full product-card__atc"
+          data-quick-add
+          data-variant-id="{{ product.variants[0].id }}"
+          data-product-title="{{ product.title | escape }}"
+        >
+          Add To Cart
+        </button>
+      {%- else -%}
+        <a href="{{ product.url }}" class="btn btn--secondary btn--full">
+          Select Options
+        </a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+</article>

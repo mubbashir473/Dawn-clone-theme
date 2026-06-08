@@ -1,0 +1,58 @@
+<section class="error-404">
+  <div class="container error-404__wrapper">
+
+    <div class="error-404__content">
+      <span class="error-404__code">404</span>
+      <h1 class="error-404__title">Page not found</h1>
+      <p class="error-404__text">
+        The page you're looking for doesn't exist or has been moved.
+      </p>
+      <div class="error-404__buttons">
+        <a href="{{ routes.root_url }}" class="btn btn--primary">Go Home</a>
+        <a href="{{ routes.all_products_collection_url }}" class="btn btn--secondary">Shop All</a>
+      </div>
+    </div>
+
+    <!-- Inline search -->
+    <form action="{{ routes.search_url }}" method="get" class="error-404__search">
+      <input type="hidden" name="type" value="product">
+      <input
+        type="search"
+        name="q"
+        placeholder="Search products..."
+        class="error-404__search-input"
+        aria-label="Search"
+      />
+      <button type="submit" class="btn btn--primary">Search</button>
+    </form>
+
+    <!-- Featured collection -->
+    {%- if section.settings.collection != blank -%}
+      {%- assign featured_col = collections[section.settings.collection] -%}
+      {%- if featured_col.products.size > 0 -%}
+        <div class="error-404__featured">
+          <h2>Popular Products</h2>
+          <div class="error-404__grid">
+            {%- for product in featured_col.products limit: 4 -%}
+              {% render 'product-card', product: product %}
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "404",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Featured collection"
+    }
+  ]
+}
+{% endschema %}

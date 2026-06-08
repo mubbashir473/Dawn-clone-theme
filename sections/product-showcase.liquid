@@ -1,0 +1,237 @@
+{%- assign product = section.settings.product -%}
+
+<section class="product">
+  <div class="container product__wrapper">
+
+    <!-- GALLERY -->
+    <div class="product__gallery">
+      {%- if product != blank -%}
+
+        <!-- Main image -->
+        <div class="product__main-image">
+          <img
+            id="main-product-image"
+            src="{{ product.featured_image | image_url: width: 1200 }}"
+            srcset="
+              {{ product.featured_image | image_url: width: 600 }} 600w,
+              {{ product.featured_image | image_url: width: 900 }} 900w,
+              {{ product.featured_image | image_url: width: 1200 }} 1200w
+            "
+            sizes="(max-width: 991px) 100vw, 50vw"
+            alt="{{ product.featured_image.alt | escape }}"
+            loading="lazy"
+          />
+        </div>
+
+        <!-- Thumbnail strip -->
+        {%- if product.images.size > 1 -%}
+          <div class="product__thumbnails">
+            {%- for image in product.images limit: 6 -%}
+              <button
+                class="product__thumb {% if forloop.first %}active{% endif %}"
+                data-image-url="{{ image | image_url: width: 1200 }}"
+                aria-label="View image {{ forloop.index }}"
+              >
+                <img
+                  src="{{ image | image_url: width: 120 }}"
+                  alt="{{ image.alt | escape }}"
+                  loading="lazy"
+                />
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+      {%- else -%}
+        <!-- Onboarding placeholder -->
+        <div class="product__main-image">
+          {{ 'product-1' | placeholder_svg_tag: 'product__placeholder' }}
+        </div>
+      {%- endif -%}
+    </div>
+
+    <!-- PRODUCT CONTENT -->
+    <div class="product__content">
+
+      {%- if section.settings.badge_text != blank -%}
+        <span class="product__badge">{{ section.settings.badge_text }}</span>
+      {%- endif -%}
+
+      {%- if product != blank -%}
+        <h2>{{ product.title }}</h2>
+
+        <!-- PRICE -->
+        <div class="product__price">
+          {%- if product.compare_at_price > product.price -%}
+            <span class="product__price--sale">{{ product.price | money }}</span>
+            <span class="product__price--compare">{{ product.compare_at_price | money }}</span>
+          {%- else -%}
+            {{ product.price | money }}
+          {%- endif -%}
+        </div>
+
+        <!-- DESCRIPTION -->
+        {%- if product.description != blank -%}
+          <div class="product__description">
+            {{ product.description | truncatewords: 40 }}
+          </div>
+        {%- endif -%}
+
+        <!-- PRODUCT FORM -->
+        {%- form 'product', product, id: 'product-form', data-product-form: '' -%}
+
+          <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" data-variant-id>
+
+          <!-- VARIANTS -->
+          {%- unless product.has_only_default_variant -%}
+            {%- for option in product.options_with_values -%}
+              <div class="variant-option" data-option-index="{{ forloop.index0 }}">
+                <label class="variant-option__label">{{ option.name }}</label>
+                <div class="variant-selector">
+                  {%- for value in option.values -%}
+                    <button
+                      type="button"
+                      class="variant-btn {% if option.selected_value == value %}active{% endif %}"
+                      data-option-value="{{ value }}"
+                    >
+                      {{ value }}
+                    </button>
+                  {%- endfor -%}
+                </div>
+              </div>
+            {%- endfor -%}
+          {%- endunless -%}
+
+          <!-- QUANTITY -->
+          <div class="quantity-selector">
+            <button type="button" id="decreaseQty" aria-label="Decrease quantity">-</button>
+            <input
+              type="number"
+              id="quantity"
+              name="quantity"
+              value="1"
+              min="1"
+              aria-label="Quantity"
+            />
+            <button type="button" id="increaseQty" aria-label="Increase quantity">+</button>
+          </div>
+
+          <!-- ADD TO CART -->
+          <button
+            type="submit"
+            class="btn btn--primary btn--full add-to-cart"
+            data-add-to-cart
+            {%- unless product.available -%}disabled{%- endunless -%}
+          >
+            {%- if product.available -%}
+              {{ section.settings.atc_text | default: 'Add To Cart' }}
+            {%- else -%}
+              Sold Out
+            {%- endif -%}
+          </button>
+
+        {%- endform -%}
+
+      {%- else -%}
+        <!-- Onboarding state -->
+        <h2>{{ section.settings.placeholder_title | default: 'NutriFlow Daily Greens' }}</h2>
+        <div class="product__price">$59.00 <span>$79.00</span></div>
+        <p class="product__description">Select a product in the theme editor to display it here.</p>
+        <button class="btn btn--primary btn--full" disabled>Add To Cart</button>
+      {%- endif -%}
+
+      <!-- ACCORDION BLOCKS -->
+      {%- if section.blocks.size > 0 -%}
+        <div class="accordion-group">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'accordion' -%}
+              <details {% if forloop.first and section.settings.first_open %}open{% endif %} {{ block.shopify_attributes }}>
+                <summary>{{ block.settings.title }}</summary>
+                <div class="accordion-content">{{ block.settings.content }}</div>
+              </details>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+
+    </div>
+
+  </div>
+</section>
+
+<!-- Product JSON for JS variant switching -->
+{%- if product != blank -%}
+  <script type="application/json" id="product-json">
+    {{ product | json }}
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product Showcase",
+  "tag": "section",
+  "class": "section-product",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "Best Seller"
+    },
+    {
+      "type": "text",
+      "id": "atc_text",
+      "label": "Add to cart button text",
+      "default": "Add To Cart"
+    },
+    {
+      "type": "checkbox",
+      "id": "first_open",
+      "label": "Open first accordion by default",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "placeholder_title",
+      "label": "Placeholder title (no product selected)",
+      "default": "NutriFlow Daily Greens"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "accordion",
+      "name": "Accordion",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Ingredients"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Add your content here.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Showcase",
+      "category": "Product",
+      "blocks": [
+        { "type": "accordion", "settings": { "title": "Ingredients", "content": "<p>Organic greens, probiotics, digestive enzymes, vitamins and minerals.</p>" } },
+        { "type": "accordion", "settings": { "title": "Shipping", "content": "<p>Free shipping on all subscriptions and orders above $75.</p>" } },
+        { "type": "accordion", "settings": { "title": "Returns", "content": "<p>30-day satisfaction guarantee.</p>" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

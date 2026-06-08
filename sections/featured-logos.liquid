@@ -1,0 +1,81 @@
+<section class="featured">
+  <div class="container">
+
+    {%- if section.settings.title != blank -%}
+      <h2 class="section-title">{{ section.settings.title }}</h2>
+    {%- endif -%}
+
+    <div class="featured__logos">
+      {%- for block in section.blocks -%}
+        <div class="featured__logo" {{ block.shopify_attributes }}>
+          {%- if block.settings.logo_image != blank -%}
+            <img
+              src="{{ block.settings.logo_image | image_url: width: 200 }}"
+              alt="{{ block.settings.logo_text }}"
+              loading="lazy"
+              width="120"
+            />
+          {%- else -%}
+            <span>{{ block.settings.logo_text }}</span>
+          {%- endif -%}
+        </div>
+      {%- else -%}
+        <!-- Onboarding state — shows when no blocks added yet -->
+        {%- for i in (1..5) -%}
+          <div class="featured__logo featured__logo--placeholder">
+            {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+          </div>
+        {%- endfor -%}
+      {%- endfor -%}
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Featured Logos",
+  "tag": "section",
+  "class": "section-featured-logos",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section title",
+      "default": "Featured In"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "Logo",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "logo_image",
+          "label": "Logo image"
+        },
+        {
+          "type": "text",
+          "id": "logo_text",
+          "label": "Logo text (fallback)",
+          "default": "Forbes"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Logos",
+      "category": "Brand",
+      "blocks": [
+        { "type": "logo", "settings": { "logo_text": "Forbes" } },
+        { "type": "logo", "settings": { "logo_text": "Healthline" } },
+        { "type": "logo", "settings": { "logo_text": "GQ" } },
+        { "type": "logo", "settings": { "logo_text": "Men's Health" } },
+        { "type": "logo", "settings": { "logo_text": "Wellness" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

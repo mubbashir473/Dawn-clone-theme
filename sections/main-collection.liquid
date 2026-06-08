@@ -1,0 +1,411 @@
+{% comment %}
+  SECTION: main-collection.liquid
+
+  ARCHITECTURE:
+  ┌──────────────────────────────────────────────────────────┐
+  │  TOOLBAR: sort_by + active filters + result count        │
+  ├────────────────┬─────────────────────────────────────────┤
+  │  FILTER PANEL  │  PRODUCT GRID                           │
+  │  (left column) │  ┌──────┐ ┌──────┐ ┌──────┐           │
+  │  • Price       │  │ card │ │ card │ │ card │           │
+  │  • Color       │  └──────┘ └──────┘ └──────┘           │
+  │  • Size        │                                         │
+  │  • Availability│         paginate / load more            │
+  └────────────────┴─────────────────────────────────────────┘
+
+  HOW FILTERS WORK (critical concept):
+  Shopify's storefront filter system uses URL params.
+  Each filter is a `filter` object with `values`.
+  When a value is selected, Shopify adds it to the URL:
+
+    ?filter.p.m.custom.flavor=Chocolate&filter.v.option.size=Large
+
+  The URL param format is:
+    filter.p.m.{namespace}.{key}  = product metafield filters
+    filter.v.option.{option_name} = variant option filters
+    filter.v.availability         = availability filter
+    filter.v.price.gte / .lte    = price range
+
+  Shopify automatically re-filters collection.products.
+  You never write a loop manually — you just render the params.
+{% endcomment %}
+
+{%- liquid
+  assign sort_by = collection.sort_by | default: collection.default_sort_by
+  assign active_filters_count = 0
+  for filter in collection.filters
+    for filter_value in filter.active_values
+      assign active_filters_count = active_filters_count | plus: 1
+    endfor
+    if filter.type == 'price_range'
+      if filter.min_value.value or filter.max_value.value
+        assign active_filters_count = active_filters_count | plus: 1
+      endif
+    endif
+  endfor
+-%}
+
+<section class="main-collection" data-section-id="{{ section.id }}">
+  <div class="container">
+
+    <!-- COLLECTION HEADER -->
+    <div class="collection-header">
+      <div class="collection-header__text">
+        <h1 class="collection-header__title">{{ collection.title }}</h1>
+        {%- if collection.description != blank -%}
+          <div class="collection-header__desc rte">{{ collection.description }}</div>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="collection-toolbar">
+
+      <!-- Filter toggle (mobile) -->
+      <button class="collection-toolbar__filter-btn" data-filter-toggle aria-expanded="false" aria-controls="filter-panel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Filters
+        {%- if active_filters_count > 0 -%}
+          <span class="collection-toolbar__filter-count">{{ active_filters_count }}</span>
+        {%- endif -%}
+      </button>
+
+      <!-- Product count -->
+      <p class="collection-toolbar__count">
+        {{ collection.products_count }}
+        {{ collection.products_count | pluralize: 'product', 'products' }}
+      </p>
+
+      <!-- SORT BY -->
+      <div class="collection-toolbar__sort">
+        <label for="sort-select" class="sr-only">Sort by</label>
+        <select id="sort-select" data-sort-select class="sort-select">
+          {%- for option in collection.sort_options -%}
+            <option
+              value="{{ option.value }}"
+              {% if option.value == sort_by %}selected{% endif %}
+            >
+              {{ option.name }}
+            </option>
+          {%- endfor -%}
+        </select>
+      </div>
+
+    </div>
+
+    <!-- ACTIVE FILTER PILLS -->
+    {%- if active_filters_count > 0 -%}
+      <div class="active-filters">
+        <span class="active-filters__label">Active:</span>
+        {%- for filter in collection.filters -%}
+
+          {%- if filter.type == 'price_range' -%}
+            {%- if filter.min_value.value or filter.max_value.value -%}
+              <a
+                href="{{ filter.url_to_remove }}"
+                class="active-filter-pill"
+              >
+                Price:
+                {%- if filter.min_value.value -%}{{ filter.min_value.value | money }}{%- else -%}$0{%- endif -%}
+                –
+                {%- if filter.max_value.value -%}{{ filter.max_value.value | money }}{%- else -%}{{ filter.range_max | money }}{%- endif -%}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </a>
+            {%- endif -%}
+
+          {%- else -%}
+            {%- for value in filter.active_values -%}
+              <a
+                href="{{ value.url_to_remove }}"
+                class="active-filter-pill"
+              >
+                {{ filter.label }}: {{ value.label }}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </a>
+            {%- endfor -%}
+          {%- endif -%}
+
+        {%- endfor -%}
+
+        <a href="{{ collection.url }}" class="active-filter-pill active-filter-pill--clear">
+          Clear all
+        </a>
+      </div>
+    {%- endif -%}
+
+    <!-- MAIN LAYOUT: filters + grid -->
+    <div class="collection-layout">
+
+      <!-- ═══════════════════════════════
+           FILTER PANEL (left sidebar)
+           ═══════════════════════════════ -->
+      <aside
+        id="filter-panel"
+        class="filter-panel"
+        data-filter-panel
+        aria-label="Filters"
+      >
+
+        <div class="filter-panel__header">
+          <h2>Filters</h2>
+          <button class="filter-panel__close" data-filter-close aria-label="Close filters">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        {%- comment -%}
+          collection.filters is an array of filter objects.
+          Each filter has:
+            .type     — "list" | "price_range"
+            .label    — "Color", "Size", "Price", etc.
+            .values[] — array of { label, count, active, url_to_add, url_to_remove }
+
+          For price_range:
+            .min_value.value, .max_value.value
+            .range_max
+        {%- endcomment -%}
+
+        {%- for filter in collection.filters -%}
+          <div class="filter-group" data-filter-group>
+
+            <button class="filter-group__toggle" aria-expanded="true" data-filter-group-toggle>
+              {{ filter.label }}
+              <svg class="filter-group__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+
+            <div class="filter-group__body">
+
+              {%- case filter.type -%}
+
+                {%- when 'boolean', 'list' -%}
+                  <ul class="filter-list">
+                    {%- for value in filter.values -%}
+                      <li class="filter-list__item">
+                        <label class="filter-checkbox {% if value.active %}is-checked{% endif %}">
+                          <a
+                            href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}"
+                            class="filter-checkbox__link"
+                            aria-label="{{ value.label }}{% if value.active %} (active, click to remove){% endif %}"
+                          >
+                            <span class="filter-checkbox__box {% if value.active %}is-checked{% endif %}">
+                              {%- if value.active -%}
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                              {%- endif -%}
+                            </span>
+
+                            {%- comment -%} Color swatch for Color filters {%- endcomment -%}
+                            {%- if filter.label == 'Color' or filter.label == 'Colour' -%}
+                              <span
+                                class="filter-swatch"
+                                style="--swatch-color: {{ value.label | downcase | replace: ' ', '' }};"
+                              ></span>
+                            {%- endif -%}
+
+                            <span class="filter-checkbox__label">
+                              {{ value.label }}
+                              <span class="filter-checkbox__count">({{ value.count }})</span>
+                            </span>
+                          </a>
+                        </label>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+
+                {%- when 'price_range' -%}
+                  {%- liquid
+                    assign min_val = filter.min_value.value | default: 0 | divided_by: 100.0
+                    assign max_val = filter.max_value.value | default: filter.range_max | divided_by: 100.0
+                    assign range_max = filter.range_max | divided_by: 100.0
+                  -%}
+
+                  <div class="filter-price" data-price-filter>
+                    <div class="filter-price__inputs">
+
+                      {%- comment -%}
+                        Price filter submits via GET to the current URL.
+                        The param names MUST match exactly:
+                          filter.v.price.gte  (greater than or equal)
+                          filter.v.price.lte  (less than or equal)
+                      {%- endcomment -%}
+
+                      <div class="filter-price__field">
+                        <label>Min</label>
+                        <div class="filter-price__input-wrap">
+                          <span>$</span>
+                          <input
+                            type="number"
+                            name="{{ filter.min_value.param_name }}"
+                            id="filter-price-min"
+                            value="{{ min_val | round }}"
+                            min="0"
+                            max="{{ range_max | round }}"
+                            placeholder="0"
+                            data-price-min
+                          />
+                        </div>
+                      </div>
+
+                      <div class="filter-price__sep">—</div>
+
+                      <div class="filter-price__field">
+                        <label>Max</label>
+                        <div class="filter-price__input-wrap">
+                          <span>$</span>
+                          <input
+                            type="number"
+                            name="{{ filter.max_value.param_name }}"
+                            id="filter-price-max"
+                            value="{{ max_val | round }}"
+                            min="0"
+                            max="{{ range_max | round }}"
+                            placeholder="{{ range_max | round }}"
+                            data-price-max
+                          />
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <button type="button" class="btn btn--secondary filter-price__apply" data-price-apply>
+                      Apply
+                    </button>
+                  </div>
+
+              {%- endcase -%}
+
+            </div>
+          </div>
+        {%- endfor -%}
+
+      </aside>
+      <!-- /filter-panel -->
+
+      <!-- ═══════════════════════════════
+           PRODUCT GRID
+           ═══════════════════════════════ -->
+      <div class="collection-grid-wrap">
+
+        {%- paginate collection.products by section.settings.products_per_page -%}
+
+          {%- if collection.products.size > 0 -%}
+
+            <div
+              class="collection-grid"
+              style="--grid-cols: {{ section.settings.columns_desktop }};"
+              data-collection-grid
+            >
+              {%- for product in collection.products -%}
+                {% render 'product-card',
+                  product: product,
+                  show_quick_add: section.settings.show_quick_add,
+                  show_vendor: section.settings.show_vendor,
+                  lazy: true
+                %}
+              {%- endfor -%}
+            </div>
+
+            <!-- PAGINATION -->
+            {%- if paginate.pages > 1 -%}
+              <div class="pagination">
+
+                {%- if paginate.previous -%}
+                  <a href="{{ paginate.previous.url }}" class="pagination__btn pagination__btn--prev">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    Previous
+                  </a>
+                {%- endif -%}
+
+                <div class="pagination__pages">
+                  {%- for part in paginate.parts -%}
+                    {%- if part.is_link -%}
+                      <a href="{{ part.url }}" class="pagination__page">{{ part.title }}</a>
+                    {%- elsif part.title == paginate.current_page -%}
+                      <span class="pagination__page pagination__page--current" aria-current="page">{{ part.title }}</span>
+                    {%- else -%}
+                      <span class="pagination__ellipsis">{{ part.title }}</span>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </div>
+
+                {%- if paginate.next -%}
+                  <a href="{{ paginate.next.url }}" class="pagination__btn pagination__btn--next">
+                    Next
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                  </a>
+                {%- endif -%}
+
+              </div>
+            {%- endif -%}
+
+          {%- else -%}
+
+            <!-- EMPTY STATE -->
+            <div class="collection-empty">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <h2>No products found</h2>
+              {%- if active_filters_count > 0 -%}
+                <p>Try removing some filters.</p>
+                <a href="{{ collection.url }}" class="btn btn--primary">Clear filters</a>
+              {%- else -%}
+                <p>Check back soon or browse all products.</p>
+                <a href="{{ routes.all_products_collection_url }}" class="btn btn--primary">View All Products</a>
+              {%- endif -%}
+            </div>
+
+          {%- endif -%}
+
+        {%- endpaginate -%}
+      </div>
+      <!-- /collection-grid-wrap -->
+
+    </div>
+    <!-- /collection-layout -->
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection",
+  "tag": "section",
+  "class": "section-main-collection",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "label": "Products per page",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Columns (desktop)",
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_add",
+      "label": "Show Quick Add button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show product vendor",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection",
+      "category": "Collection"
+    }
+  ]
+}
+{% endschema %}

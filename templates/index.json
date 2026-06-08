@@ -1,0 +1,106 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "hero-banner",
+      "settings": {
+        "eyebrow": "Clinically Formulated Wellness",
+        "heading": "Daily nutrition made simple.",
+        "subheading": "Clean ingredients. Powerful results. Designed to support energy, focus, immunity, and recovery.",
+        "btn_primary_label": "Shop Now",
+        "btn_primary_url": "/collections/all",
+        "btn_secondary_label": "Learn More",
+        "btn_secondary_url": "/pages/about",
+        "bg_color": "#ffffff"
+      }
+    },
+    "logos": {
+      "type": "featured-logos",
+      "blocks": {
+        "logo_1": { "type": "logo", "settings": { "logo_text": "Forbes" } },
+        "logo_2": { "type": "logo", "settings": { "logo_text": "Healthline" } },
+        "logo_3": { "type": "logo", "settings": { "logo_text": "GQ" } },
+        "logo_4": { "type": "logo", "settings": { "logo_text": "Men's Health" } },
+        "logo_5": { "type": "logo", "settings": { "logo_text": "Wellness" } }
+      },
+      "block_order": ["logo_1", "logo_2", "logo_3", "logo_4", "logo_5"],
+      "settings": {
+        "title": "Featured In"
+      }
+    },
+    "benefits": {
+      "type": "benefits-grid",
+      "blocks": {
+        "b1": { "type": "benefit", "settings": { "title": "Clean Ingredients", "text": "No fillers, artificial sweeteners, or unnecessary additives." } },
+        "b2": { "type": "benefit", "settings": { "title": "Daily Energy", "text": "Balanced formula designed to support sustainable energy." } },
+        "b3": { "type": "benefit", "settings": { "title": "Gut Support", "text": "Includes probiotics and digestive enzymes." } },
+        "b4": { "type": "benefit", "settings": { "title": "Scientifically Backed", "text": "Research-based ingredients with transparent dosages." } }
+      },
+      "block_order": ["b1", "b2", "b3", "b4"],
+      "settings": {
+        "eyebrow": "Why NutriFlow?",
+        "heading": "Built for modern performance."
+      }
+    },
+    "product": {
+      "type": "product-showcase",
+      "blocks": {
+        "acc1": { "type": "accordion", "settings": { "title": "Ingredients", "content": "<p>Organic greens, probiotics, digestive enzymes, vitamins and minerals.</p>" } },
+        "acc2": { "type": "accordion", "settings": { "title": "Shipping", "content": "<p>Free shipping on all subscriptions and orders above $75.</p>" } },
+        "acc3": { "type": "accordion", "settings": { "title": "Returns", "content": "<p>30-day satisfaction guarantee.</p>" } }
+      },
+      "block_order": ["acc1", "acc2", "acc3"],
+      "settings": {
+        "badge_text": "Best Seller",
+        "atc_text": "Add To Cart",
+        "first_open": true
+      }
+    },
+    "testimonials": {
+      "type": "testimonials",
+      "blocks": {
+        "t1": { "type": "testimonial", "settings": { "quote": "This completely changed my morning routine. Energy levels are much more stable.", "author": "Sarah K.", "rating": 5, "show_stars": true } },
+        "t2": { "type": "testimonial", "settings": { "quote": "The cleanest supplement brand I've tried. Great taste and noticeable benefits.", "author": "Daniel M.", "rating": 5, "show_stars": true } },
+        "t3": { "type": "testimonial", "settings": { "quote": "The subscription option makes it super convenient.", "author": "Emma T.", "rating": 5, "show_stars": true } }
+      },
+      "block_order": ["t1", "t2", "t3"],
+      "settings": {
+        "eyebrow": "Testimonials",
+        "heading": "Trusted by thousands."
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q1": { "type": "faq_item", "settings": { "question": "When should I take this?", "answer": "<p>Most customers take it in the morning before breakfast.</p>" } },
+        "q2": { "type": "faq_item", "settings": { "question": "Is this vegan?", "answer": "<p>Yes, completely vegan and gluten free.</p>" } },
+        "q3": { "type": "faq_item", "settings": { "question": "Can I cancel anytime?", "answer": "<p>Yes, subscriptions can be paused or cancelled anytime.</p>" } }
+      },
+      "block_order": ["q1", "q2", "q3"],
+      "settings": {
+        "eyebrow": "FAQ",
+        "heading": "Common questions."
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "eyebrow": "Join The Community",
+        "heading": "Get wellness tips and exclusive offers.",
+        "placeholder": "Email Address",
+        "btn_label": "Subscribe",
+        "bg_color": "#111111",
+        "text_color": "#ffffff"
+      }
+    }
+  },
+  "order": ["hero", "logos", "benefits", "product", "testimonials", "faq", "newsletter"]
+}

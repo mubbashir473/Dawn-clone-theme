@@ -1,0 +1,45 @@
+<div class="mobile-menu" id="mobile-menu" aria-hidden="true" role="dialog" aria-label="Navigation">
+  <div class="mobile-menu__overlay" data-mobile-menu-close></div>
+
+  <div class="mobile-menu__panel">
+
+    <div class="mobile-menu__header">
+      <span class="mobile-menu__logo">{{ shop.name }}</span>
+      <button class="mobile-menu__close" data-mobile-menu-close aria-label="Close menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <nav class="mobile-menu__nav">
+      {%- for link in linklists['main-menu'].links -%}
+        {%- if link.links != blank -%}
+          <details class="mobile-menu__dropdown">
+            <summary class="mobile-menu__link mobile-menu__link--parent">
+              {{ link.title }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </summary>
+            <div class="mobile-menu__sub">
+              {%- for child_link in link.links -%}
+                <a href="{{ child_link.url }}" class="mobile-menu__sub-link">{{ child_link.title }}</a>
+              {%- endfor -%}
+            </div>
+          </details>
+        {%- else -%}
+          <a href="{{ link.url }}" class="mobile-menu__link {% if link.active %}active{% endif %}">
+            {{ link.title }}
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    </nav>
+
+    <div class="mobile-menu__footer">
+      {%- if shop.customer_accounts_enabled -%}
+        <a href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}" class="mobile-menu__util-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          {% if customer %}My Account{% else %}Sign In{% endif %}
+        </a>
+      {%- endif -%}
+    </div>
+
+  </div>
+</div>

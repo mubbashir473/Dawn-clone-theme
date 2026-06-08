@@ -9,12 +9,15 @@
  */
 {
   "sections": {
-    "template": {
-      "type": "template-blog",
-      "settings": {}
+    "main": {
+      "type": "main-collection",
+      "settings": {
+        "products_per_page": 16,
+        "columns_desktop": 3,
+        "show_quick_add": true,
+        "show_vendor": false
+      }
     }
   },
-  "order": [
-    "template"
-  ]
+  "order": ["main"]
 }

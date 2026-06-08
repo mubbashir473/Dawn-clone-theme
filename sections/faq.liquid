@@ -1,0 +1,98 @@
+<section class="faq">
+  <div class="container faq__wrapper">
+
+    <div class="section-heading">
+      {%- if section.settings.eyebrow != blank -%}
+        <span>{{ section.settings.eyebrow }}</span>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2>{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="faq__subheading">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+    </div>
+
+    <div class="faq__items">
+      {%- for block in section.blocks -%}
+        <details class="faq__item" {{ block.shopify_attributes }}>
+          <summary class="faq__question">
+            {{ block.settings.question }}
+            <svg class="faq__chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <div class="faq__answer">
+            {{ block.settings.answer }}
+          </div>
+        </details>
+      {%- else -%}
+        <!-- Onboarding placeholder -->
+        <details class="faq__item">
+          <summary class="faq__question">
+            Add FAQ questions in the theme editor
+            <svg class="faq__chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <div class="faq__answer"><p>Click "Add block" to get started.</p></div>
+        </details>
+      {%- endfor -%}
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "FAQ",
+  "tag": "section",
+  "class": "section-faq",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow text",
+      "default": "FAQ"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Common questions."
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading (optional)"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "faq_item",
+      "name": "Question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "When should I take this?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Most customers take it in the morning before breakfast.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ",
+      "category": "Content",
+      "blocks": [
+        { "type": "faq_item", "settings": { "question": "When should I take this?", "answer": "<p>Most customers take it in the morning before breakfast.</p>" } },
+        { "type": "faq_item", "settings": { "question": "Is this vegan?", "answer": "<p>Yes, completely vegan and gluten free.</p>" } },
+        { "type": "faq_item", "settings": { "question": "Can I cancel anytime?", "answer": "<p>Yes, subscriptions can be paused or cancelled anytime.</p>" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
