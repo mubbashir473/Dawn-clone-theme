@@ -24,7 +24,7 @@
           "logo_width": 120,
           "logo_text": "NutriFlow",
           "menu": "main-menu",
-          "sticky": false,
+          "sticky": true,
           "show_search": true
         }
       },
