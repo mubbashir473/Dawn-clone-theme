@@ -8,7 +8,41 @@
  * ------------------------------------------------------------
  */
 {
-  "current": "Default",
+  "current": {
+    "sections": {
+      "predictive-search": {
+        "type": "predictive-search",
+        "settings": {
+          "placeholder": "Search products...",
+          "show_trending": true,
+          "results_limit": 5
+        }
+      },
+      "header": {
+        "type": "header",
+        "settings": {
+          "logo_width": 120,
+          "logo_text": "NutriFlow",
+          "menu": "nutriflow-menu",
+          "sticky": true,
+          "show_search": true
+        }
+      },
+      "footer": {
+        "type": "footer",
+        "settings": {
+          "logo_width": 100,
+          "logo_text": "NutriFlow",
+          "tagline": "Premium nutrition for modern lifestyles.",
+          "social_instagram": "",
+          "social_tiktok": "",
+          "social_facebook": "",
+          "show_payment_icons": true
+        }
+      }
+    },
+    "content_for_index": []
+  },
   "presets": {
     "Default": {}
   }
